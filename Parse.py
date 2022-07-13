@@ -10,13 +10,15 @@ Parser = argparse.ArgumentParser()
 Parser.add_argument(
     "-F", help="Pass the csv file that stores the HID data.", required=True, type=str)
 Parser.add_argument(
-    "-I", help="Passing the interactive flag allows for evaluation of text via PyAutoGUI", type=int)
+    "-I", help="Passing the interactive flag allows for evaluation of text via PyAutoGUI", action='store_true')
+Parser.add_argument(
+    "-NH", help="Use this argument if the CSV file has no Header Row", action='store_true')
 Args = Parser.parse_args()
 
 
 def InteractiveAnalysis(KeyboardInput):
     'Uses PyAutoGui to evaluate sequence interactively'
-    print("[*] Sleeping for 5 Seconds, Open Leafpad.")
+    print("[*] Sleeping for 5 Seconds, Open Leafpad or another GUI Program")
     time.sleep(5)
 
     for key in KeyboardInput:
@@ -28,7 +30,6 @@ def InteractiveAnalysis(KeyboardInput):
             pyautogui.press("enter")
         else:
             pyautogui.press(key)
-
 
 
 def CapitalizationHandler(ToProcess, CapsLock=False):
@@ -74,14 +75,15 @@ KeyboardInput = []
 # reading csv file
 with open(Filename, 'r') as csvfile:
     csvreader = csv.reader(csvfile)
+    Capdata_Row = int(input(
+        "Enter the Position of Capdata e.g. 1 (Does not require 0-based input) : "))
     for row in csvreader:
-        Rows.append(row)
-        HIDs.append(row[6]) #! Look Into 
-# This line works on the idea that the CSV file included a table header value. 
-HIDs.pop(0) 
+        HIDs.append(row[Capdata_Row-1])
+# This line works on the idea that the CSV file included a table header value.
+if not Args.NH:
+    HIDs.pop(0)
 
 # Working HIDs
-
 
 
 # MappingN Accounts for Normal Mappings whilst MappingS accounts for MappingN with Shift
@@ -132,3 +134,5 @@ KeyboardInput = list("".join(KeyboardInput).split("Enter")[
                      2].replace("RightArrow", ">").replace("LeftArrow", "<"))
 print("[+] Payload Generated", "".join(KeyboardInput))
 
+if Args.I:
+    InteractiveAnalysis(KeyboardInput)
